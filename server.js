@@ -8,10 +8,26 @@ const csv = require('csv-parser');
 const fs = require('fs');
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
 
 app.use(cors());
 app.use(bodyParser.json());
+
+
+// Configure storage
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // Set destination to 'uploads/' directory
+        cb(null, path.join(__dirname, 'uploads'));
+    },
+    filename: function (req, file, cb) {
+        // Save the file as 'temp.csv' regardless of the original filename
+        cb(null, 'temp.csv');
+    }
+});
+
+// Initialize upload middleware with the configured storage
+const upload = multer({ storage: storage });
+
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

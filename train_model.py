@@ -5,8 +5,11 @@ from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.metrics import mean_squared_error, accuracy_score, classification_report
 import numpy as np
 import json
+import joblib
+import os
 
-def train_model(features, target, model_type):
+
+def train_model(features, target, model_type, session_id):
     print("Training request received")
     print("Features:", features)
     print("Target:", target)
@@ -16,7 +19,7 @@ def train_model(features, target, model_type):
     
     try:
         # Load the dataset
-        data = pd.read_csv('uploads/temp.csv')
+        data = pd.read_csv(f'uploads/{session_id}/temp.csv')
         print("Data loaded successfully")
 
         # Define features (X) and target (y)
@@ -52,7 +55,12 @@ def train_model(features, target, model_type):
             print("Feature Importances:")
             for feature, importance in zip(features, feature_importances):
                 print(f"{feature}: {importance}")
+            
+            # Save the model to a file
+            model_path = f'uploads/{session_id}/trained_model.pkl'
+            joblib.dump(best_model, model_path)
             results = {'mse': mse, 'best_params': grid_search.best_params_, 'feature_importances': feature_importances.tolist()}
+        
         elif model_type == 'Classification':
             model = DecisionTreeClassifier(random_state=8123)
             param_grid = {
@@ -71,9 +79,13 @@ def train_model(features, target, model_type):
             print("Feature Importances:")
             for feature, importance in zip(features, feature_importances):
                 print(f"{feature}: {importance}")
+            
+            # Save the model to a file
+            model_path = f'uploads/{session_id}/trained_model.pkl'
+            joblib.dump(best_model, model_path)
             results = {'accuracy': accuracy, 'report': report, 'best_params': grid_search.best_params_, 'feature_importances': feature_importances.tolist()}
         
-        # Print results as JSON string
+                # Print results as JSON string
         print("Results:")
         print(json.dumps(results))
         
@@ -86,5 +98,7 @@ if __name__ == "__main__":
     features = sys.argv[1].split(',')
     target = sys.argv[2]
     model_type = sys.argv[3]
+    session_id = sys.argv[4]
 
-    train_model(features, target, model_type)
+    train_model(features, target, model_type, session_id)
+
